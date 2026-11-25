@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>食堂菜库</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="menu-page">
+    <header class="page-header">
+      <h1>食堂菜库</h1>
+      <button class="settings-button" id="open-settings" type="button" aria-controls="settings"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.75a3.25 3.25 0 1 0 0 6.5 3.25 3.25 0 0 0 0-6.5Z" stroke="currentColor" stroke-width="1.7"/><path d="M19.2 13.4a7.7 7.7 0 0 0 0-2.8l1.5-1.2-1.5-2.6-1.9.6a7.6 7.6 0 0 0-2.4-1.4L14.5 4h-3l-.4 2a7.6 7.6 0 0 0-2.4 1.4l-1.9-.6-1.5 2.6 1.5 1.2a7.7 7.7 0 0 0 0 2.8l-1.5 1.2 1.5 2.6 1.9-.6a7.6 7.6 0 0 0 2.4 1.4l.4 2h3l.4-2a7.6 7.6 0 0 0 2.4-1.4l1.9.6 1.5-2.6-1.5-1.2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>设置</span></button>
+    </header>
+    <nav class="categories" aria-label="菜品分类">
+      <button class="category selected" data-filter="meat" aria-pressed="true">荤菜</button>
+      <button class="category" data-filter="vegetable" aria-pressed="false">素菜</button>
+      <button class="category" data-filter="soup" aria-pressed="false">汤</button>
+    </nav>
+    <p id="status" class="status" role="status">正在加载菜库…</p>
+    <section class="grid" aria-label="菜品列表"></section>
+    <section id="pending" hidden><h2>待确认分类</h2><p class="status">这些菜正在识别，或需要确认后才能归类。</p><div class="grid" id="pending-grid"></div></section>
+  </main>
+  <main id="settings" class="settings-page" aria-labelledby="settings-title" hidden>
+    <div class="settings-head"><div><p class="eyebrow">菜库管理</p><h2 id="settings-title">设置与状态</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
+    <div class="settings-content">
+      <section class="settings-section" aria-labelledby="admin-title">
+        <div class="section-heading"><div><h3 id="admin-title">管理员验证</h3><p>使用管理员账号解锁设置</p></div><span id="admin-badge" class="badge neutral">已锁定</span></div>
+        <p id="admin-message" class="hint" role="status">输入管理员账号和密码以查看任务与调度状态。</p>
+        <form id="admin-login" class="admin-login">
+          <label>管理员邮箱<input id="admin-email" type="email" autocomplete="username" required></label>
+          <label>密码<input id="admin-password" type="password" autocomplete="current-password" required></label>
+          <button class="check-button" type="submit">解锁设置</button>
+        </form>
+        <button id="admin-logout" class="check-button" type="button" hidden>锁定</button>
+      </section>
+      <div id="admin-protected" hidden>
+      <section class="settings-section" aria-labelledby="connection-title">
+        <div class="section-heading"><div><h3 id="connection-title">数据库连接</h3><p>检查网页能否读取菜库</p></div><span id="connection-badge" class="badge" role="status">检查中</span></div>
+        <p id="connection-detail" class="detail">正在读取菜库…</p>
+        <button class="check-button" id="check-connection" type="button">重新检查</button>
+        <p class="hint">检查会访问数据库，可能唤醒休眠中的实例。连接成功不代表定时任务正在运行。</p>
+      </section>
+      <section class="settings-section" aria-labelledby="worklist-title">
+        <div class="section-heading"><div><h3 id="worklist-title">需要处理</h3><p>逐项检查并决定如何处理</p></div></div>
+        <div id="admin-worklist" aria-live="polite"><p class="hint">正在读取待处理事项…</p></div>
+      </section>
+      <section class="settings-section" aria-labelledby="tasks-title">
+        <div class="section-heading"><div><h3 id="tasks-title">后台任务</h3><p>分类、图片与查重</p></div></div>
+        <button id="admin-refresh" class="check-button" type="button" hidden>刷新任务状态</button>
+        <div id="admin-results" hidden></div>
+      </section>
+      <section class="settings-section" aria-labelledby="security-title">
+        <div class="section-heading"><div><h3 id="security-title">密钥管理</h3><p>在云服务控制台管理凭据</p></div><span class="badge neutral">尚未接入</span></div>
+        <p class="hint">网页无法核实密钥是否已删除，也不能轮换密钥。请勿在此处输入密钥。</p>
+      </section>
+      </div>
+    </div>
+  </main>
+  <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+  <script src="worklist.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
