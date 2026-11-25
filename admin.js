@@ -10,7 +10,7 @@ const adminProtected = document.querySelector('#admin-protected');
 const adminWorklist = document.querySelector('#admin-worklist');
 const projectBase = api.replace('/functions/v1/daily-menu-site','');
 let adminToken = null, adminGeneration = 0, adminLoadSequence = 0;
-const kindNames = {classification:'分类',dedupe:'查重',image:'图片',speech:'语音（历史任务）'};
+const kindNames = {classification:'分类',dedupe:'查重',image:'图片'};
 const stateNames = {pending:'等待',running:'处理中',done:'完成',needs_review:'待检查'};
 const scheduleNames = {'daily-menu-ai-dispatch':'图片与查重', 'daily-menu-classification-dispatch':'分类'};
 const item = (tag, value, className) => { const el = document.createElement(tag); if (className) el.className = className; el.textContent = value; return el; };
@@ -23,11 +23,11 @@ function renderAdmin(data) {
   for (const s of data.schedules) schedules.append(item('p', `${scheduleNames[s.name] || '后台任务'}：${s.active ? '已启用' : '已停用'}${s.schedule === '* * * * *' ? ' · 每分钟' : ''} · 最近执行 ${formatTime(s.last_started)}${s.last_status ? ' · ' + (s.last_status === 'succeeded' ? '执行成功' : '执行未成功') : ''}`));
   schedules.append(item('p','调度执行成功不代表每类任务都在派发或已经完成。图片派发状态未单独提供；数据库休眠期间是否执行仍未验证。'));
   const jobs = document.createElement('div'); jobs.className = 'setting-row'; jobs.append(item('strong','任务队列'));
-  for (const kind of ['classification','dedupe','image','speech']) {
+  for (const kind of ['classification','dedupe','image']) {
     const matches = data.jobs.filter(j => j.kind === kind);
     if (matches.length) jobs.append(item('p', `${kindNames[kind]}：${matches.map(j => `${stateNames[j.state] || j.state} ${j.count}`).join(' · ')}`));
   }
-  jobs.append(item('p', `已关联媒体：图片 ${data.media.image} · 语音 ${data.media.speech}。历史任务完成不代表文件仍存在。`));
+  jobs.append(item('p', `已关联媒体：图片 ${data.media.image}。历史任务完成不代表文件仍存在。`));
   adminResults.append(schedules,jobs); adminResults.hidden = false;
 }
 async function loadAdmin() {
