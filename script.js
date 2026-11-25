@@ -42,13 +42,25 @@ function connectionState(state, detail) {
   checkConnection.disabled = state === '检查中';
 }
 let filter = 'meat', noticeTimer, refreshTimer, refreshAttempts = 0, playbackRequest = 0;
+const imageLoaders = new WeakMap();
+const imageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    imageObserver.unobserve(entry.target);
+    imageLoaders.get(entry.target)?.();
+  }
+}, {rootMargin: '200px'}) : null;
+const imageCache = 'caches' in window ? caches.open('daily-menu-images-v1').catch(() => null) : Promise.resolve(null);
+const imageCacheLifetime = 24 * 60 * 60 * 1000;
 function announce(message) { notice.textContent = message; notice.classList.add('visible'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => notice.classList.remove('visible'), 3000); }
 function applyFilter() {
   let shown = 0;
   grid.querySelectorAll('.card').forEach(card => {
     card.hidden = card.dataset.category !== filter;
     if (!card.hidden) shown++;
+    if (!imageObserver && !card.hidden) imageLoaders.get(card)?.();
   });
+  if (!imageObserver && !pending.hidden) pendingGrid.querySelectorAll('.card').forEach(card => imageLoaders.get(card)?.());
   status.textContent = shown ? '' : '这个分类还没有菜品';
   status.hidden = shown > 0;
 }
@@ -58,9 +70,24 @@ categories.forEach(button => button.addEventListener('click', () => {
   if (status.textContent !== '正在加载菜库…') applyFilter();
 }));
 async function mediaUrl(id, kind) {
-  const response = await fetch(`${api}?id=${encodeURIComponent(id)}&kind=${kind}`, {headers, signal: AbortSignal.timeout(30000)});
+  const url = `${api}?id=${encodeURIComponent(id)}&kind=${kind}`;
+  const cache = await imageCache;
+  if (cache) {
+    try {
+      const cached = await cache.match(url);
+      const savedAt = Number(cached?.headers.get('x-daily-menu-cached-at'));
+      if (cached && savedAt > 0 && Date.now() - savedAt < imageCacheLifetime) return URL.createObjectURL(await cached.blob());
+      if (cached) await cache.delete(url);
+    } catch { /* Cache access is optional. */ }
+  }
+  const response = await fetch(url, {headers, signal: AbortSignal.timeout(30000)});
   if (!response.ok) throw new Error('media unavailable');
-  return URL.createObjectURL(await response.blob());
+  const blob = await response.blob();
+  if (cache) {
+    const saved = new Response(blob, {headers: {'content-type': blob.type || 'application/octet-stream', 'x-daily-menu-cached-at': String(Date.now())}});
+    cache.put(url, saved).catch(() => {});
+  }
+  return URL.createObjectURL(blob);
 }
 function makeCard(dish) {
   const card = document.createElement('button'); card.type = 'button'; card.className = 'card';
@@ -68,7 +95,21 @@ function makeCard(dish) {
   const visual = document.createElement('div'); visual.className = 'card-visual'; visual.setAttribute('aria-hidden','true');
   const placeholder = document.createElement('span'); placeholder.className = 'placeholder'; placeholder.textContent = '暂无图片'; visual.append(placeholder);
   const imageId = Number.isSafeInteger(dish.image_id) && dish.image_id > 0 ? dish.image_id : dish.id;
-  if (dish.image) mediaUrl(imageId, 'image').then(url => { const img = document.createElement('img'); img.alt = ''; img.src = url; img.onload = () => placeholder.remove(); visual.append(img); }).catch(() => {});
+  if (dish.image) {
+    let started = false;
+    placeholder.textContent = '图片加载中…';
+    imageLoaders.set(card, () => {
+      if (started) return;
+      started = true;
+      mediaUrl(imageId, 'image').then(url => {
+        const img = document.createElement('img'); img.alt = '';
+        img.onload = () => { placeholder.remove(); URL.revokeObjectURL(url); };
+        img.onerror = () => { placeholder.textContent = '暂无图片'; img.remove(); URL.revokeObjectURL(url); };
+        img.src = url; visual.append(img);
+      }).catch(() => { placeholder.textContent = '暂无图片'; });
+    });
+    if (imageObserver) imageObserver.observe(card);
+  }
   const info = document.createElement('span'); info.className = 'card-info';
   const name = document.createElement('span'); name.className = 'card-name'; name.textContent = dish.name;
   const play = document.createElement('span'); play.className = 'play'; play.setAttribute('aria-hidden','true');
@@ -102,6 +143,7 @@ async function load() {
     if (!Array.isArray(dishes)) throw new Error('invalid data');
     const valid = dishes.filter(d => Number.isSafeInteger(d.id) && d.id > 0 && typeof d.name === 'string');
     connectionState('可连接', `菜库读取成功 · ${new Date().toLocaleString('zh-CN', { hour12: false })}`);
+    imageObserver?.disconnect();
     grid.replaceChildren(...valid.filter(d => ['meat', 'vegetable', 'soup'].includes(d.category)).map(makeCard));
     const uncertain = valid.filter(d => !['meat', 'vegetable', 'soup'].includes(d.category));
     pendingGrid.replaceChildren(...uncertain.map(makeCard));
