@@ -15,12 +15,14 @@ const checkConnection = document.querySelector('#check-connection');
 const menuPage = document.querySelector('#menu-page');
 const openSettings = document.querySelector('#open-settings');
 const closeSettings = document.querySelector('#close-settings');
+let menuScrollY = 0;
 function showPage(isSettings) {
   const wasSettings = !settings.hidden;
+  if (isSettings && !wasSettings) menuScrollY = window.scrollY;
   settings.hidden = !isSettings;
   menuPage.hidden = isSettings;
   if (wasSettings && !isSettings) settings.dispatchEvent(new Event('settingsleave'));
-  window.scrollTo(0, 0);
+  window.scrollTo(0, isSettings ? 0 : menuScrollY);
   (isSettings ? closeSettings : openSettings).focus({preventScroll:true});
 }
 openSettings.addEventListener('click', () => {
@@ -42,6 +44,7 @@ function connectionState(state, detail) {
   checkConnection.disabled = state === '检查中';
 }
 let filter = 'meat', noticeTimer, refreshTimer, refreshAttempts = 0, playbackRequest = 0;
+const categoryPositions = new Map();
 const imageLoaders = new WeakMap();
 const imageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
   for (const entry of entries) {
@@ -64,11 +67,34 @@ function applyFilter() {
   status.textContent = shown ? '' : '这个分类还没有菜品';
   status.hidden = shown > 0;
 }
-categories.forEach(button => button.addEventListener('click', () => {
-  filter = button.dataset.filter;
-  categories.forEach(item => { const selected = item === button; item.classList.toggle('selected', selected); item.setAttribute('aria-pressed', String(selected)); });
+function selectCategory(next) {
+  if (next === filter) return;
+  categoryPositions.set(filter, window.scrollY);
+  filter = next;
+  categories.forEach(item => { const selected = item.dataset.filter === filter; item.classList.toggle('selected', selected); item.setAttribute('aria-pressed', String(selected)); });
   if (status.textContent !== '正在加载菜库…') applyFilter();
-}));
+  window.scrollTo(0, categoryPositions.get(filter) ?? 0);
+}
+categories.forEach(button => button.addEventListener('click', () => selectCategory(button.dataset.filter)));
+let swipeStart = null;
+menuPage.addEventListener('touchstart', event => {
+  if (event.touches.length !== 1) { swipeStart = null; return; }
+  const touch = event.touches[0];
+  swipeStart = {x: touch.clientX, y: touch.clientY};
+}, {passive: true});
+menuPage.addEventListener('touchcancel', () => { swipeStart = null; });
+menuPage.addEventListener('touchend', event => {
+  if (!swipeStart || event.changedTouches.length !== 1) { swipeStart = null; return; }
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - swipeStart.x, dy = touch.clientY - swipeStart.y;
+  swipeStart = null;
+  if (Math.abs(dx) < 60 || Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+  const index = Array.from(categories).findIndex(button => button.dataset.filter === filter);
+  const next = categories[index + (dx < 0 ? 1 : -1)];
+  if (!next) return;
+  if (event.cancelable) event.preventDefault();
+  selectCategory(next.dataset.filter);
+}, {passive: false});
 async function mediaUrl(id, kind) {
   const url = `${api}?id=${encodeURIComponent(id)}&kind=${kind}`;
   const cache = await imageCache;
