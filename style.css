@@ -128,3 +128,7 @@ main[hidden]{display:none}
 .settings-panel[data-settings-panel="system"]:not([hidden]) ~ .settings-panel[data-settings-panel="system"]:not([hidden]){margin-top:14px}
 .section-footer{display:flex;justify-content:flex-end;margin-top:20px}
 #admin-refresh:not([hidden]){margin-top:0}
+.usage-group{padding-top:20px}
+.usage-group + .usage-group{margin-top:16px;border-top:1px solid var(--manage-border)}
+.usage-group strong{font-size:15px}
+.usage-group p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.55;overflow-wrap:anywhere}

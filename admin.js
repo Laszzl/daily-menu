@@ -17,11 +17,36 @@ settingsTabs.forEach(button=>button.addEventListener('click',()=>{
   settingsPanels.forEach(panel=>{panel.hidden=panel.dataset.settingsPanel!==selected;});
 }));
 let adminToken = null, adminGeneration = 0, adminLoadSequence = 0;
+let usageSequence = 0;
 const kindNames = {classification:'分类',dedupe:'查重',image:'图片'};
 const stateNames = {pending:'等待',running:'处理中',done:'完成',needs_review:'待检查'};
 const scheduleNames = {'daily-menu-ai-dispatch':'查重与已授权配图', 'daily-menu-classification-dispatch':'分类'};
 const item = (tag, value, className) => { const el = document.createElement(tag); if (className) el.className = className; el.textContent = value; return el; };
 const formatTime = value => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleString('zh-CN', {hour12:false}) : '暂无记录';
+async function loadUsage() {
+  if (!adminToken) return;
+  const generation=adminGeneration, sequence=++usageSequence;
+  const current=()=>generation===adminGeneration && sequence===usageSequence;
+  const root=document.querySelector('#admin-usage'), button=document.querySelector('#usage-refresh');
+  button.disabled=true; root.replaceChildren(item('p','正在读取…','hint'));
+  try {
+    const response=await adminRpc('menu_site_admin_usage',{});
+    if(!response.ok) throw new Error('unavailable');
+    const data=await response.json(); if(!current())return;
+    if(!Number.isSafeInteger(data.classification_batches_total)||!Number.isSafeInteger(data.classification_batches_today)) throw new Error('invalid');
+    const ai=item('div',null,'usage-group');
+    ai.append(item('strong','阿里云百炼'),
+      item('p','AI 调用次数：暂无完整记录'),
+      item('p',`分类请求批次：今日 ${data.classification_batches_today} · 累计 ${data.classification_batches_total}`),
+      item('p','百炼费用：未接入'),item('p','阿里云账户余额：未接入'));
+    const database=item('div',null,'usage-group');
+    database.append(item('strong','火山引擎数据库'),
+      item('p',`数据库进程本次启动：${formatTime(data.database_process_started_at)}`),
+      item('p','数据库费用：未接入'),item('p','火山引擎账户余额：未接入'));
+    root.replaceChildren(ai,database);
+  } catch {if(current())root.replaceChildren(item('p','用量信息暂时无法读取，请稍后重试。','hint'));}
+  finally {if(current())button.disabled=false;}
+}
 function renderAdmin(data, imageSummary) {
   adminResults.replaceChildren();
   const images = document.createElement('div'); images.className = 'setting-row';
@@ -57,6 +82,7 @@ async function loadAdmin() {
     if (!Array.isArray(data.schedules) || !Array.isArray(data.jobs) || !Array.isArray(data.review) || !data.media) throw new Error('invalid');
     adminBadge.textContent = '已解锁'; adminLogin.hidden = true; adminRefresh.hidden = false; adminLogout.hidden = false; adminProtected.hidden = false;
     adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
+    loadUsage();
     renderAdmin(data);
     adminRpc('menu_site_admin_image_summary', {}).then(async response=>{
       if(!response.ok) throw new Error('unavailable');
@@ -109,5 +135,6 @@ adminLogin.addEventListener('submit', async event => {
   finally { adminPassword.value = ''; button.disabled = false; }
 });
 adminRefresh.addEventListener('click', loadAdmin);
+document.querySelector('#usage-refresh').addEventListener('click',loadUsage);
 adminLogout.addEventListener('click', () => lockAdmin());
 settings.addEventListener('settingsleave', () => lockAdmin());
