@@ -105,5 +105,5 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
     row.append(yes,no,msg);matches.append(row);
   }
   matches.append(el('p','请选择是否为同一道菜；最多显示前 100 项。','work-hint'));
-  root.append(el('p',`今日分类模型调用 ${data.classification_calls_today} 次。`, 'work-hint'));
+  root.append(el('p',`今日分类请求批次 ${data.classification_calls_today} 次。`, 'work-hint'));
 }

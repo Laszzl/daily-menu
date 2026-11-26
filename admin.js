@@ -42,18 +42,53 @@ async function loadUsage() {
       if(value.status!=='ok'||typeof value.available!=='string'||! /^-?\d+(?:\.\d+)?$/.test(value.available)||!['CNY','USD','JPY'].includes(value.currency)||!Number.isFinite(Number(value.available))) return '暂时无法读取';
       return new Intl.NumberFormat('zh-CN',{style:'currency',currency:value.currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value.available));
     };
+    const billText=(value)=>{
+      if(!value||value.status==='unavailable') return '暂时无法读取';
+      if(value.status==='not_configured') return '未接入';
+      if(value.status!=='ok') return '暂时无法读取';
+      if(value.amount===null) return '暂无账单';
+      return balanceText({status:'ok',available:value.amount,currency:value.currency});
+    };
     const cards=item('div',null,'usage-balances');
-    for (const [label,caption,value] of [['阿里云','账户可用额度',balances?.ali],['火山引擎','账户可用余额',balances?.volc]]) {
+    for (const [label,caption,value,bill] of [['阿里云','账户可用额度',balances?.ali,balances?.ali_bill],['火山引擎','账户可用余额',balances?.volc,balances?.volc_bill]]) {
       const card=item('div',null,'usage-balance');
+      if(typeof bill?.current?.diagnostic==='string' && /^[A-Za-z0-9_.-]{1,100}$/.test(bill.current.diagnostic)) card.dataset.billStatus=bill.current.diagnostic;
       const amount=balanceText(value);
       card.append(item('span',label,'usage-provider'),item('span',caption,'usage-caption'),item('strong',amount,amount==='未接入'||amount==='暂时无法读取'?'usage-amount usage-unavailable':'usage-amount'));
+      const billed=item('div',null,'usage-bill');
+      billed.append(item('span','本月已出账'),item('strong',billText(bill?.current)));
+      card.append(billed);
       cards.append(card);
     }
     const details=item('div',null,'usage-details');
     const row=(label,value)=>{const el=item('div',null,'usage-detail');el.append(item('span',label),item('strong',value));return el;};
-    const validBatches=Number.isSafeInteger(data?.classification_batches_total)&&data.classification_batches_total>=0&&Number.isSafeInteger(data?.classification_batches_today)&&data.classification_batches_today>=0;
-    details.append(row('分类请求批次',validBatches?`今日 ${data.classification_batches_today} · 累计 ${data.classification_batches_total}`:'暂时无法读取'),row('数据库进程启动',data?.database_process_started_at?formatTime(data.database_process_started_at):'暂时无法读取'));
-    root.replaceChildren(cards,details);
+    const tracking=typeof data?.ai_tracking_from==='string' && Number.isSafeInteger(data?.ai_requests_total) && Number.isSafeInteger(data?.ai_requests_today) && Number.isSafeInteger(data?.ai_requests_month);
+    details.append(row('AI 请求尝试',tracking?`今日 ${data.ai_requests_today} · 本月 ${data.ai_requests_month} · 累计 ${data.ai_requests_total}`:'统计准备中'),
+      row('上月已出账',`阿里云 ${billText(balances?.ali_bill?.previous)} · 火山 ${billText(balances?.volc_bill?.previous)}`),
+      row('数据库进程启动',data?.database_process_started_at?formatTime(data.database_process_started_at):'暂时无法读取'));
+    const scope=document.createElement('details');scope.className='usage-preferences usage-explanation';
+    scope.append(item('summary','统计说明'),item('p',`阿里云：百炼业务空间账单；火山：账户内 AIDAP Supabase 账单。账单可能延迟。${tracking?` AI 请求统计自 ${formatTime(data.ai_tracking_from)} 开始。`:''}`,'usage-scope'));
+    const alerts=item('div',null,'usage-alerts');
+    const prefs=document.createElement('details');prefs.className='usage-preferences';
+    prefs.append(item('summary','余额提醒'));
+    const form=document.createElement('form');form.className='usage-preferences-form';
+    let settings={};try{settings=JSON.parse(localStorage.getItem('daily-menu-balance-alerts-v1')||'{}')||{};}catch{}
+    const inputs={};
+    for(const [key,label] of [['ali','阿里云阈值（元）'],['volc','火山引擎阈值（元）']]) {
+      const wrap=document.createElement('label');wrap.append(item('span',label));
+      const input=document.createElement('input');input.type='number';input.min='0';input.step='0.01';input.placeholder='不提醒';input.value=typeof settings[key]==='number'&&Number.isFinite(settings[key])&&settings[key]>=0?String(settings[key]):'';inputs[key]=input;wrap.append(input);form.append(wrap);
+    }
+    const save=item('button','保存提醒','check-button');save.type='submit';form.append(save);
+    const feedback=item('p','仅保存在当前设备。','usage-scope');form.append(feedback);prefs.append(form);
+    function renderAlerts(){
+      alerts.replaceChildren();
+      for(const [key,label,value] of [['ali','阿里云',balances?.ali],['volc','火山引擎',balances?.volc]]) {
+        const threshold=settings[key],amount=Number(value?.available);
+        if(typeof threshold==='number'&&Number.isFinite(threshold)&&threshold>=0&&value?.status==='ok'&&value.currency==='CNY'&&Number.isFinite(amount)&&amount<threshold) alerts.append(item('p',`${label}余额低于提醒金额`,'usage-alert'));
+      }
+    }
+    form.addEventListener('submit',event=>{event.preventDefault();const next={};for(const key of ['ali','volc']){if(inputs[key].value!==''){const n=Number(inputs[key].value);if(!Number.isFinite(n)||n<0)return;next[key]=n;}}try{localStorage.setItem('daily-menu-balance-alerts-v1',JSON.stringify(next));settings=next;feedback.textContent='已保存到当前设备。';renderAlerts();}catch{feedback.textContent='暂时无法保存，请检查浏览器设置。';}});
+    renderAlerts();root.replaceChildren(alerts,cards,details,scope,prefs);
   } catch {if(current())root.replaceChildren(item('p','用量信息暂时无法读取，请稍后重试。','hint'));}
   finally {if(current())button.disabled=false;}
 }
