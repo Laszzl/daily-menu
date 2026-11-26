@@ -30,29 +30,30 @@ async function loadUsage() {
   const root=document.querySelector('#admin-usage'), button=document.querySelector('#usage-refresh');
   button.disabled=true; root.replaceChildren(item('p','正在读取…','hint'));
   try {
-    const [response, balances]=await Promise.all([
-      adminRpc('menu_site_admin_usage',{}),
+    const [data, balances]=await Promise.all([
+      adminRpc('menu_site_admin_usage',{}).then(r=>r.ok?r.json():null).catch(()=>null),
       fetch(`${projectBase}/functions/v1/daily-menu-balance`,{method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':'application/json'},body:'{}',signal:AbortSignal.timeout(20000)}).then(r=>r.ok?r.json():null).catch(()=>null)
     ]);
-    if(!response.ok) throw new Error('unavailable');
-    const data=await response.json(); if(!current())return;
-    if(!Number.isSafeInteger(data.classification_batches_total)||!Number.isSafeInteger(data.classification_batches_today)) throw new Error('invalid');
+    if(!current())return;
     const balanceText=(value)=>{
-      if(!value || value.status==='unavailable') return '暂时无法读取';
+      if(!value) return '暂时无法读取';
+      if(value.status==='unavailable') return '暂时无法读取';
       if(value.status==='not_configured') return '未接入';
-      if(value.status!=='ok'||typeof value.available!=='string'||! /^-?\d+(?:\.\d+)?$/.test(value.available)||!['CNY','USD','JPY'].includes(value.currency)) return '暂时无法读取';
-      return `${value.available} ${value.currency}`;
+      if(value.status!=='ok'||typeof value.available!=='string'||! /^-?\d+(?:\.\d+)?$/.test(value.available)||!['CNY','USD','JPY'].includes(value.currency)||!Number.isFinite(Number(value.available))) return '暂时无法读取';
+      return new Intl.NumberFormat('zh-CN',{style:'currency',currency:value.currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value.available));
     };
-    const ai=item('div',null,'usage-group');
-    ai.append(item('strong','阿里云百炼'),
-      item('p','AI 调用次数：暂无完整记录'),
-      item('p',`分类请求批次：今日 ${data.classification_batches_today} · 累计 ${data.classification_batches_total}`),
-      item('p','百炼费用：未接入'),item('p',`阿里云账户可用额度：${balanceText(balances?.ali)}`));
-    const database=item('div',null,'usage-group');
-    database.append(item('strong','火山引擎数据库'),
-      item('p',`数据库进程本次启动：${formatTime(data.database_process_started_at)}`),
-      item('p','数据库费用：未接入'),item('p',`火山引擎账户可用余额：${balanceText(balances?.volc)}`));
-    root.replaceChildren(ai,database);
+    const cards=item('div',null,'usage-balances');
+    for (const [label,caption,value] of [['阿里云','账户可用额度',balances?.ali],['火山引擎','账户可用余额',balances?.volc]]) {
+      const card=item('div',null,'usage-balance');
+      const amount=balanceText(value);
+      card.append(item('span',label,'usage-provider'),item('span',caption,'usage-caption'),item('strong',amount,amount==='未接入'||amount==='暂时无法读取'?'usage-amount usage-unavailable':'usage-amount'));
+      cards.append(card);
+    }
+    const details=item('div',null,'usage-details');
+    const row=(label,value)=>{const el=item('div',null,'usage-detail');el.append(item('span',label),item('strong',value));return el;};
+    const validBatches=Number.isSafeInteger(data?.classification_batches_total)&&data.classification_batches_total>=0&&Number.isSafeInteger(data?.classification_batches_today)&&data.classification_batches_today>=0;
+    details.append(row('分类请求批次',validBatches?`今日 ${data.classification_batches_today} · 累计 ${data.classification_batches_total}`:'暂时无法读取'),row('数据库进程启动',data?.database_process_started_at?formatTime(data.database_process_started_at):'暂时无法读取'));
+    root.replaceChildren(cards,details);
   } catch {if(current())root.replaceChildren(item('p','用量信息暂时无法读取，请稍后重试。','hint'));}
   finally {if(current())button.disabled=false;}
 }

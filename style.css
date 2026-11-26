@@ -132,3 +132,15 @@ main[hidden]{display:none}
 .usage-group + .usage-group{margin-top:16px;border-top:1px solid var(--manage-border)}
 .usage-group strong{font-size:15px}
 .usage-group p{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.55;overflow-wrap:anywhere}
+
+/* Live account information, grouped for quick comparison. */
+.usage-balances{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+.usage-balance{display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:18px 20px;border:1px solid var(--manage-border);border-radius:12px;background:var(--manage-surface)}
+.usage-provider{font-size:15px;font-weight:650;line-height:1.4}
+.usage-caption{margin-top:5px;color:var(--muted);font-size:13px;line-height:1.4}
+.usage-amount{margin-top:16px;font-size:27px;font-weight:650;line-height:1.2;letter-spacing:-.02em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.usage-amount.usage-unavailable{font-size:16px;letter-spacing:0;color:var(--muted)}
+.usage-details{margin-top:20px;border-top:1px solid var(--manage-border)}
+.usage-detail{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:13px 0;border-bottom:1px solid var(--manage-border);font-size:14px;line-height:1.5}
+.usage-detail span{color:var(--muted);flex:none}.usage-detail strong{font-weight:600;text-align:right;overflow-wrap:anywhere}
+@media(max-width:400px){.usage-balances{gap:8px}.usage-balance{padding:15px 13px}.usage-amount{font-size:23px}.usage-detail{flex-wrap:wrap;gap:2px 12px}}
