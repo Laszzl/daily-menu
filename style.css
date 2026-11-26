@@ -123,3 +123,8 @@ main[hidden]{display:none}
 .settings-page .pagination span{color:var(--muted);font-size:14px;text-align:center;white-space:nowrap}
 #admin-refresh:not([hidden]){margin-top:16px}
 @media(max-width:600px){.settings-nav{grid-template-columns:repeat(4,minmax(0,1fr));margin:18px 0 14px}.settings-tab{font-size:13px;min-height:46px}.settings-panel .settings-section{padding:20px 18px!important}}
+
+/* Two status cards are separated even when another panel sits between them. */
+.settings-panel[data-settings-panel="system"]:not([hidden]) ~ .settings-panel[data-settings-panel="system"]:not([hidden]){margin-top:14px}
+.section-footer{display:flex;justify-content:flex-end;margin-top:20px}
+#admin-refresh:not([hidden]){margin-top:0}

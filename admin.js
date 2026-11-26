@@ -19,11 +19,16 @@ settingsTabs.forEach(button=>button.addEventListener('click',()=>{
 let adminToken = null, adminGeneration = 0, adminLoadSequence = 0;
 const kindNames = {classification:'分类',dedupe:'查重',image:'图片'};
 const stateNames = {pending:'等待',running:'处理中',done:'完成',needs_review:'待检查'};
-const scheduleNames = {'daily-menu-ai-dispatch':'图片与查重', 'daily-menu-classification-dispatch':'分类'};
+const scheduleNames = {'daily-menu-ai-dispatch':'查重与已授权配图', 'daily-menu-classification-dispatch':'分类'};
 const item = (tag, value, className) => { const el = document.createElement(tag); if (className) el.className = className; el.textContent = value; return el; };
 const formatTime = value => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleString('zh-CN', {hour12:false}) : '暂无记录';
-function renderAdmin(data) {
+function renderAdmin(data, imageSummary) {
   adminResults.replaceChildren();
+  const images = document.createElement('div'); images.className = 'setting-row';
+  images.append(item('strong','AI 配图'),item('p','配图方式：手动选择'));
+  if (imageSummary === undefined) images.append(item('p','正在读取配图状态…'));
+  else if (imageSummary === null) images.append(item('p','配图状态暂时无法读取。'));
+  else images.append(item('p',`等待选择 ${imageSummary.waiting} · 已授权处理中 ${imageSummary.generating} · 失败 ${imageSummary.failed}`));
   const schedules = document.createElement('div'); schedules.className = 'setting-row';
   schedules.append(item('strong','定时任务'));
   if (!data.schedules.length) schedules.append(item('p','没有读取到调度配置。'));
@@ -32,10 +37,10 @@ function renderAdmin(data) {
   const jobs = document.createElement('div'); jobs.className = 'setting-row'; jobs.append(item('strong','任务队列'));
   for (const kind of ['classification','dedupe','image']) {
     const matches = data.jobs.filter(j => j.kind === kind);
-    if (matches.length) jobs.append(item('p', `${kindNames[kind]}：${matches.map(j => `${stateNames[j.state] || j.state} ${j.count}`).join(' · ')}`));
+    if (matches.length) jobs.append(item('p', `${kindNames[kind]}${kind==='image'?'生成任务':''}：${matches.map(j => `${stateNames[j.state] || j.state} ${j.count}`).join(' · ')}`));
   }
   jobs.append(item('p', `已关联图片：${data.media.image}`));
-  adminResults.append(schedules,jobs); adminResults.hidden = false;
+  adminResults.append(images,schedules,jobs); adminResults.hidden = false;
 }
 async function loadAdmin() {
   if (!adminToken) return;
@@ -53,6 +58,12 @@ async function loadAdmin() {
     adminBadge.textContent = '已解锁'; adminLogin.hidden = true; adminRefresh.hidden = false; adminLogout.hidden = false; adminProtected.hidden = false;
     adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
     renderAdmin(data);
+    adminRpc('menu_site_admin_image_summary', {}).then(async response=>{
+      if(!response.ok) throw new Error('unavailable');
+      const summary=await response.json();
+      if(!summary || !['waiting','generating','failed'].every(k=>Number.isSafeInteger(summary[k]) && summary[k]>=0)) throw new Error('invalid');
+      if(isCurrent()) renderAdmin(data,summary);
+    }).catch(()=>{if(isCurrent()) renderAdmin(data,null);});
     const rpcUpload=(dish,requestId,file)=>fetch(`${projectBase}/functions/v1/daily-menu-upload`,{method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':file.type,'x-dish-id':String(dish),...(requestId ? {'x-request-id':String(requestId)} : {})},body:file,signal:AbortSignal.timeout(90000)});
     const onImageSaved=()=>{if(generation===adminGeneration) {announce('图片已更新');load();}};
     renderImageRequests({root:document.querySelector('#admin-image-requests'),rpc:adminRpc,rpcUpload,isCurrent,onSaved:onImageSaved,onApproved:()=>announce('已允许 AI 生成')});
