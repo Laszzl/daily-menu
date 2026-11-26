@@ -30,3 +30,8 @@ main[hidden]{display:none}
 
 .bulk-retry{margin:14px 14px 0}
 .bulk-result{padding:12px 14px;border-radius:10px;background:var(--surface);font-size:15px;line-height:1.6}
+
+.history-search { display:flex; flex-wrap:wrap; align-items:end; gap:.75rem; margin:1rem 0; }
+.history-search label { display:grid; gap:.35rem; flex:1 1 12rem; }
+.history-search input { min-width:0; width:100%; padding:.65rem; font:inherit; border:1px solid #b9c1b5; border-radius:.5rem; }
+.work-actions button[aria-pressed="true"] { background:#284b36; color:white; }

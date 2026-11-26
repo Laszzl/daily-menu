@@ -46,6 +46,7 @@ async function loadAdmin() {
     adminBadge.textContent = '已解锁'; adminLogin.hidden = true; adminRefresh.hidden = false; adminLogout.hidden = false; adminProtected.hidden = false;
     adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
     renderAdmin(data);
+    renderHistory({root:document.querySelector('#admin-history'),rpc:adminRpc,isCurrent});
     adminWorklist.replaceChildren(item('p','正在读取待处理事项…','hint'));
     try {
       const response = await adminRpc('menu_site_admin_worklist', {});
