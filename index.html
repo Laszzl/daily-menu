@@ -36,6 +36,10 @@
         <button id="admin-logout" class="check-button" type="button" hidden>锁定</button>
       </section>
       <div id="admin-protected" hidden>
+      <section class="settings-section" aria-labelledby="image-requests-title">
+        <div class="section-heading"><div><h3 id="image-requests-title">配图等候区</h3><p>为每次提交选择上传或允许 AI 生成</p></div></div>
+        <div id="admin-image-requests"></div>
+      </section>
       <section class="settings-section" aria-labelledby="history-title">
         <div class="section-heading"><div><h3 id="history-title">提交历史与菜品</h3><p>查看菜单记录、分类和当前配图</p></div></div>
         <div id="admin-history"></div>
@@ -65,6 +69,7 @@
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
   <script src="script.js"></script>
   <script src="worklist.js"></script>
+  <script src="images-admin.js"></script>
   <script src="history.js"></script>
   <script src="admin.js"></script>
 </body>

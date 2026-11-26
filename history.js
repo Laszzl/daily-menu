@@ -1,5 +1,5 @@
 // Render with textContent: dish names are untrusted input.
-function renderHistory({root, rpc, isCurrent}) {
+function renderHistory({root, rpc, isCurrent, rpcUpload, onImageSaved}) {
   let view = 'submissions', page = 0, search = '', sequence = 0;
   const make = (tag, text, cls) => { const node = document.createElement(tag); if (text != null) node.textContent = text; if (cls) node.className = cls; return node; };
   const category = value => ({meat:'荤菜',vegetable:'素菜',soup:'汤',unknown:'待确认'})[value] || '待确认';
@@ -40,9 +40,13 @@ function renderHistory({root, rpc, isCurrent}) {
         const box = make('div',null,'work-item');
         if (view === 'submissions') {
           box.append(make('strong',row.date),make('p',`提交时间：${formatTime(row.created_at)}`,'work-hint'));
-          for (const d of row.dishes || []) box.append(make('p',`${d.name} · ${category(d.category)} · ${imageStatus(d)}`));
+          for (const d of row.dishes || []) {
+            const request=({waiting:'等待选择配图',generating:'AI 生成中',completed:'配图已处理',failed:'配图失败',superseded:'配图已被后续操作替代'})[d.request_state];
+            box.append(make('p',`${d.name} · ${category(d.category)} · ${imageStatus(d)}${request ? ` · ${request}` : ''}`));
+          }
         } else {
           box.append(make('strong',row.name),make('p',`${category(row.category)} · 出现 ${row.appearances} 次 · 最近菜单 ${row.last_date || '暂无'} · ${imageStatus(row)}`,'work-hint'));
+          box.append(imageUploadControls({dish:row.id,requestId:null,rpcUpload,onSaved:onImageSaved}));
         }
         return box;
       });

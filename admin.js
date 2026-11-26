@@ -46,15 +46,22 @@ async function loadAdmin() {
     adminBadge.textContent = '已解锁'; adminLogin.hidden = true; adminRefresh.hidden = false; adminLogout.hidden = false; adminProtected.hidden = false;
     adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
     renderAdmin(data);
-    renderHistory({root:document.querySelector('#admin-history'),rpc:adminRpc,isCurrent});
+    const rpcUpload=(dish,requestId,file)=>fetch(`${projectBase}/functions/v1/daily-menu-upload`,{method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':file.type,'x-dish-id':String(dish),...(requestId ? {'x-request-id':String(requestId)} : {})},body:file,signal:AbortSignal.timeout(90000)});
+    const onImageSaved=()=>{if(generation===adminGeneration) {announce('图片已更新');load();loadAdmin();}};
+    renderImageRequests({root:document.querySelector('#admin-image-requests'),rpc:adminRpc,rpcUpload,isCurrent,onSaved:onImageSaved,onApproved:()=>announce('已允许 AI 生成')});
+    renderHistory({root:document.querySelector('#admin-history'),rpc:adminRpc,isCurrent,rpcUpload,onImageSaved});
     adminWorklist.replaceChildren(item('p','正在读取待处理事项…','hint'));
     try {
-      const response = await adminRpc('menu_site_admin_worklist', {});
+      const [response,managedResponse] = await Promise.all([adminRpc('menu_site_admin_worklist', {}),adminRpc('menu_site_admin_image_requests',{p_page:0})]);
       if (!response.ok) throw new Error('unavailable');
       const work = await response.json();
+      let managed=[];
+      if(managedResponse.ok) { const imageData=await managedResponse.json(); if(Array.isArray(imageData.managed_job_ids)) managed=imageData.managed_job_ids; }
       if (!isCurrent()) return;
       if (!Array.isArray(work.classification_review) || !Array.isArray(work.candidates) || !Number.isFinite(work.classification_review_count) || !Number.isFinite(work.candidate_count)) throw new Error('invalid');
-      renderWorklist({data:work,status:data,root:adminWorklist,rpc:adminRpc,isCurrent,refresh:loadAdmin,onSaved:(message,refreshMenu)=>{if(generation === adminGeneration) { announce(message); if(refreshMenu) load(); }}});
+      const managedSet=new Set(managed);
+      const filteredStatus={...data,review:data.review.filter(j=>j.kind!=='image'||!managedSet.has(j.id)),jobs:data.jobs.map(j=>j.kind==='image'&&j.state==='needs_review'?{...j,count:Math.max(0,Number(j.count)-managedSet.size)}:j)};
+      renderWorklist({data:work,status:filteredStatus,root:adminWorklist,rpc:adminRpc,isCurrent,refresh:loadAdmin,onSaved:(message,refreshMenu)=>{if(generation === adminGeneration) { announce(message); if(refreshMenu) load(); }}});
     } catch { if (isCurrent()) adminWorklist.replaceChildren(item('p','待处理事项暂时无法读取，请刷新后重试。','hint')); }
   } catch { if (isCurrent()) { adminBadge.textContent = '暂不可用'; adminResults.hidden = true; adminRefresh.hidden = false; adminMessage.textContent = '无法读取管理状态，请稍后重试。'; } }
   finally { if (isCurrent()) adminRefresh.disabled = false; }

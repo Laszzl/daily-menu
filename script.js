@@ -53,8 +53,6 @@ const imageObserver = 'IntersectionObserver' in window ? new IntersectionObserve
     imageLoaders.get(entry.target)?.();
   }
 }, {rootMargin: '200px'}) : null;
-const imageCache = 'caches' in window ? caches.open('daily-menu-images-v1').catch(() => null) : Promise.resolve(null);
-const imageCacheLifetime = 24 * 60 * 60 * 1000;
 function announce(message) { notice.textContent = message; notice.classList.add('visible'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => notice.classList.remove('visible'), 3000); }
 function applyFilter() {
   let shown = 0;
@@ -97,23 +95,9 @@ menuPage.addEventListener('touchend', event => {
 }, {passive: false});
 async function mediaUrl(id, kind) {
   const url = `${api}?id=${encodeURIComponent(id)}&kind=${kind}`;
-  const cache = await imageCache;
-  if (cache) {
-    try {
-      const cached = await cache.match(url);
-      const savedAt = Number(cached?.headers.get('x-daily-menu-cached-at'));
-      if (cached && savedAt > 0 && Date.now() - savedAt < imageCacheLifetime) return URL.createObjectURL(await cached.blob());
-      if (cached) await cache.delete(url);
-    } catch { /* Cache access is optional. */ }
-  }
-  const response = await fetch(url, {headers, signal: AbortSignal.timeout(30000)});
+  const response = await fetch(url, {headers, cache:'no-store', signal:AbortSignal.timeout(30000)});
   if (!response.ok) throw new Error('media unavailable');
-  const blob = await response.blob();
-  if (cache) {
-    const saved = new Response(blob, {headers: {'content-type': blob.type || 'application/octet-stream', 'x-daily-menu-cached-at': String(Date.now())}});
-    cache.put(url, saved).catch(() => {});
-  }
-  return URL.createObjectURL(blob);
+  return URL.createObjectURL(await response.blob());
 }
 function makeCard(dish) {
   const card = document.createElement('button'); card.type = 'button'; card.className = 'card';
