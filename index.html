@@ -23,11 +23,11 @@
     <section id="pending" hidden><h2>待确认分类</h2><p class="status">这些菜正在识别，或需要确认后才能归类。</p><div class="grid" id="pending-grid"></div></section>
   </main>
   <main id="settings" class="settings-page" aria-labelledby="settings-title" hidden>
-    <div class="settings-head"><div><p class="eyebrow">菜库管理</p><h2 id="settings-title">设置与状态</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
+    <div class="settings-head"><div><p class="eyebrow">菜库管理</p><h2 id="settings-title">菜库管理</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
     <div class="settings-content">
       <section class="settings-section" aria-labelledby="admin-title">
         <div class="section-heading"><div><h3 id="admin-title">管理员验证</h3><p>使用管理员账号解锁设置</p></div><span id="admin-badge" class="badge neutral">已锁定</span></div>
-        <p id="admin-message" class="hint" role="status">输入管理员账号和密码以查看任务与调度状态。</p>
+        <p id="admin-message" class="hint" role="status">登录后管理菜品、配图与历史记录。</p>
         <form id="admin-login" class="admin-login">
           <label>管理员邮箱<input id="admin-email" type="email" autocomplete="username" required></label>
           <label>密码<input id="admin-password" type="password" autocomplete="current-password" required></label>
@@ -36,24 +36,35 @@
         <button id="admin-logout" class="check-button" type="button" hidden>锁定</button>
       </section>
       <div id="admin-protected" hidden>
+      <nav class="settings-nav" aria-label="管理功能">
+        <button type="button" class="settings-tab" data-panel="images" aria-pressed="true">配图等候</button>
+        <button type="button" class="settings-tab" data-panel="history" aria-pressed="false">菜品与历史</button>
+        <button type="button" class="settings-tab" data-panel="work" aria-pressed="false">待处理事项</button>
+        <button type="button" class="settings-tab" data-panel="system" aria-pressed="false">系统状态</button>
+      </nav>
+      <div class="settings-panel" data-settings-panel="images">
       <section class="settings-section" aria-labelledby="image-requests-title">
         <div class="section-heading"><div><h3 id="image-requests-title">配图等候区</h3><p>为每次提交选择上传或允许 AI 生成</p></div></div>
         <div id="admin-image-requests"></div>
       </section>
+      </div><div class="settings-panel" data-settings-panel="history" hidden>
       <section class="settings-section" aria-labelledby="history-title">
         <div class="section-heading"><div><h3 id="history-title">提交历史与菜品</h3><p>查看菜单记录、分类和当前配图</p></div></div>
         <div id="admin-history"></div>
       </section>
+      </div><div class="settings-panel" data-settings-panel="system" hidden>
       <section class="settings-section" aria-labelledby="connection-title">
         <div class="section-heading"><div><h3 id="connection-title">数据库连接</h3><p>检查网页能否读取菜库</p></div><span id="connection-badge" class="badge" role="status">检查中</span></div>
         <p id="connection-detail" class="detail">正在读取菜库…</p>
         <button class="check-button" id="check-connection" type="button">重新检查</button>
         <p class="hint">检查会访问数据库，可能唤醒休眠中的实例。连接成功不代表定时任务正在运行。</p>
       </section>
+      </div><div class="settings-panel" data-settings-panel="work" hidden>
       <section class="settings-section" aria-labelledby="worklist-title">
         <div class="section-heading"><div><h3 id="worklist-title">需要处理</h3><p>逐项检查并决定如何处理</p></div></div>
         <div id="admin-worklist" aria-live="polite"><p class="hint">正在读取待处理事项…</p></div>
       </section>
+      </div><div class="settings-panel" data-settings-panel="system" hidden>
       <section class="settings-section" aria-labelledby="tasks-title">
         <div class="section-heading"><div><h3 id="tasks-title">后台任务</h3><p>分类、图片与查重</p></div></div>
         <button id="admin-refresh" class="check-button" type="button" hidden>刷新任务状态</button>
@@ -63,6 +74,7 @@
         <div class="section-heading"><div><h3 id="security-title">密钥管理</h3><p>在云服务控制台管理凭据</p></div><span class="badge neutral">尚未接入</span></div>
         <p class="hint">网页无法核实密钥是否已删除，也不能轮换密钥。请勿在此处输入密钥。</p>
       </section>
+      </div>
       </div>
     </div>
   </main>

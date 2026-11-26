@@ -42,3 +42,20 @@ main[hidden]{display:none}
 .upload-preview { display:block; max-width:12rem; max-height:9rem; object-fit:contain; border-radius:.5rem; }
 .upload-preview[hidden] { display:none; }
 .upload-controls button { justify-self:start; }
+
+/* Compact management navigation and progressive disclosure for long lists. */
+.settings-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:5px;margin:20px 0 4px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.settings-tab{min-width:0;min-height:44px;padding:9px 8px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:15px;font-weight:650;cursor:pointer}
+.settings-tab[aria-pressed="true"]{background:var(--background);border-color:var(--border);color:var(--text);box-shadow:0 2px 7px #0000000b}
+.settings-tab:focus-visible,.upload-disclosure summary:focus-visible{outline:3px solid #8c8c90;outline-offset:2px}
+.settings-panel[hidden]{display:none}
+.settings-panel .settings-section{border-bottom:1px solid var(--border)}
+.settings-panel .work-item{padding:15px 0;overflow-wrap:anywhere}
+.settings-panel .work-group .work-item{padding:14px}
+.upload-disclosure{margin-top:10px}
+.upload-disclosure summary{display:inline-flex;min-height:40px;align-items:center;padding:8px 13px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:15px;font-weight:600;cursor:pointer;list-style:none}
+.upload-disclosure summary::-webkit-details-marker{display:none}
+.upload-disclosure[open] summary{background:var(--background)}
+.history-search input{background:var(--background);color:var(--text);border-color:var(--border);min-height:44px}
+.work-actions{align-items:center}
+@media(max-width:600px){.settings-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-tab{font-size:15px}.history-search{gap:.5rem}.settings-head h2{font-size:24px}}

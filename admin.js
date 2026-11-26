@@ -9,6 +9,13 @@ const adminEmail = document.querySelector('#admin-email');
 const adminProtected = document.querySelector('#admin-protected');
 const adminWorklist = document.querySelector('#admin-worklist');
 const projectBase = api.replace('/functions/v1/daily-menu-site','');
+const settingsTabs=[...document.querySelectorAll('.settings-tab')];
+const settingsPanels=[...document.querySelectorAll('[data-settings-panel]')];
+settingsTabs.forEach(button=>button.addEventListener('click',()=>{
+  const selected=button.dataset.panel;
+  settingsTabs.forEach(tab=>tab.setAttribute('aria-pressed',String(tab===button)));
+  settingsPanels.forEach(panel=>{panel.hidden=panel.dataset.settingsPanel!==selected;});
+}));
 let adminToken = null, adminGeneration = 0, adminLoadSequence = 0;
 const kindNames = {classification:'分类',dedupe:'查重',image:'图片'};
 const stateNames = {pending:'等待',running:'处理中',done:'完成',needs_review:'待检查'};
@@ -47,7 +54,7 @@ async function loadAdmin() {
     adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
     renderAdmin(data);
     const rpcUpload=(dish,requestId,file)=>fetch(`${projectBase}/functions/v1/daily-menu-upload`,{method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':file.type,'x-dish-id':String(dish),...(requestId ? {'x-request-id':String(requestId)} : {})},body:file,signal:AbortSignal.timeout(90000)});
-    const onImageSaved=()=>{if(generation===adminGeneration) {announce('图片已更新');load();loadAdmin();}};
+    const onImageSaved=()=>{if(generation===adminGeneration) {announce('图片已更新');load();}};
     renderImageRequests({root:document.querySelector('#admin-image-requests'),rpc:adminRpc,rpcUpload,isCurrent,onSaved:onImageSaved,onApproved:()=>announce('已允许 AI 生成')});
     renderHistory({root:document.querySelector('#admin-history'),rpc:adminRpc,isCurrent,rpcUpload,onImageSaved});
     adminWorklist.replaceChildren(item('p','正在读取待处理事项…','hint'));
@@ -69,7 +76,7 @@ async function loadAdmin() {
 function adminRpc(name, body) {
   return fetch(`${projectBase}/rest/v1/rpc/${name}`, {method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
 }
-function lockAdmin(message = '输入管理员账号和密码以查看任务与调度状态。') {
+function lockAdmin(message = '登录后管理菜品、配图与历史记录。') {
   adminGeneration++; adminToken = null; adminPassword.value = ''; adminLogin.hidden = false;
   adminResults.hidden = true; adminRefresh.hidden = true; adminLogout.hidden = true; adminProtected.hidden = true;
   adminBadge.textContent = '已锁定'; adminMessage.textContent = message;

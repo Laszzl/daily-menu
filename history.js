@@ -36,6 +36,7 @@ function renderHistory({root, rpc, isCurrent, rpcUpload, onImageSaved}) {
       const data = await response.json();
       if (!isCurrent() || current !== sequence) return;
       if (!Array.isArray(data.items) || !Number.isFinite(data.total)) throw new Error('invalid');
+      if (page>0 && page*20>=data.total) { page=Math.max(0,Math.ceil(data.total/20)-1); return refresh(); }
       const rows = data.items.map(row => {
         const box = make('div',null,'work-item');
         if (view === 'submissions') {
@@ -46,7 +47,8 @@ function renderHistory({root, rpc, isCurrent, rpcUpload, onImageSaved}) {
           }
         } else {
           box.append(make('strong',row.name),make('p',`${category(row.category)} · 出现 ${row.appearances} 次 · 最近菜单 ${row.last_date || '暂无'} · ${imageStatus(row)}`,'work-hint'));
-          box.append(imageUploadControls({dish:row.id,requestId:null,rpcUpload,onSaved:onImageSaved}));
+          const upload=make('details',null,'upload-disclosure'); upload.append(make('summary','更换图片'));
+          upload.append(imageUploadControls({dish:row.id,requestId:null,rpcUpload,onSaved:()=>{onImageSaved();refresh();}})); box.append(upload);
         }
         return box;
       });
