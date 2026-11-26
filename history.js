@@ -17,7 +17,7 @@ function renderHistory({root, rpc, isCurrent, rpcUpload, onImageSaved}) {
   const submit = make('button', '搜索', 'check-button'); submit.type = 'submit';
   label.append(input); form.append(label, submit);
   const result = make('div'); result.setAttribute('aria-live','polite');
-  const pagination = make('div', null, 'work-actions');
+  const pagination = make('div', null, 'work-actions pagination');
   const previous = make('button','上一页','check-button'); previous.type='button';
   const next = make('button','下一页','check-button'); next.type='button';
   const pageLabel = make('span'); pagination.append(previous,pageLabel,next);

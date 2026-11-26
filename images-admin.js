@@ -31,7 +31,7 @@ function renderImageRequests({root,rpc,rpcUpload,isCurrent,onSaved,onApproved}) 
   const input=document.createElement('input'); input.type='search';input.maxLength=100; searchLabel.append(input);
   const searchButton=document.createElement('button');searchButton.type='submit';searchButton.className='check-button';searchButton.textContent='搜索';form.append(searchLabel,searchButton);
   const result=document.createElement('div'); result.setAttribute('aria-live','polite');
-  const controls=document.createElement('div'); controls.className='work-actions';
+  const controls=document.createElement('div'); controls.className='work-actions pagination';
   const prev=document.createElement('button'), next=document.createElement('button'), label=document.createElement('span');
   for(const b of [prev,next]){b.type='button';b.className='check-button';} prev.textContent='上一页';next.textContent='下一页';controls.append(prev,label,next);root.replaceChildren(form,result,controls);
   const el=(tag,text,cls)=>{const node=document.createElement(tag);node.textContent=text;if(cls)node.className=cls;return node;};

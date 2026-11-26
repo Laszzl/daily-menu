@@ -44,36 +44,33 @@
       </nav>
       <div class="settings-panel" data-settings-panel="images">
       <section class="settings-section" aria-labelledby="image-requests-title">
-        <div class="section-heading"><div><h3 id="image-requests-title">配图等候区</h3><p>为每次提交选择上传或允许 AI 生成</p></div></div>
+        <div class="section-heading"><div><h3 id="image-requests-title">配图等候区</h3></div></div>
         <div id="admin-image-requests"></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="history" hidden>
       <section class="settings-section" aria-labelledby="history-title">
-        <div class="section-heading"><div><h3 id="history-title">菜品与历史</h3><p>查找菜品，或查看每次菜单提交</p></div></div>
+        <div class="section-heading"><div><h3 id="history-title">菜品与历史</h3></div></div>
         <div id="admin-history"></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="system" hidden>
       <section class="settings-section" aria-labelledby="connection-title">
-        <div class="section-heading"><div><h3 id="connection-title">数据库连接</h3><p>检查网页能否读取菜库</p></div><span id="connection-badge" class="badge" role="status">检查中</span></div>
+        <div class="section-heading"><div><h3 id="connection-title">数据库连接</h3></div><span id="connection-badge" class="badge" role="status">检查中</span></div>
         <p id="connection-detail" class="detail">正在读取菜库…</p>
         <button class="check-button" id="check-connection" type="button">重新检查</button>
-        <p class="hint">检查会访问数据库，可能唤醒休眠中的实例。连接成功不代表定时任务正在运行。</p>
+        
       </section>
       </div><div class="settings-panel" data-settings-panel="work" hidden>
       <section class="settings-section" aria-labelledby="worklist-title">
-        <div class="section-heading"><div><h3 id="worklist-title">需要处理</h3><p>逐项检查并决定如何处理</p></div></div>
+        <div class="section-heading"><div><h3 id="worklist-title">需要处理</h3></div></div>
         <div id="admin-worklist" aria-live="polite"><p class="hint">正在读取待处理事项…</p></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="system" hidden>
       <section class="settings-section" aria-labelledby="tasks-title">
-        <div class="section-heading"><div><h3 id="tasks-title">后台任务</h3><p>分类、图片与查重</p></div></div>
+        <div class="section-heading"><div><h3 id="tasks-title">后台任务</h3></div></div>
         <button id="admin-refresh" class="check-button" type="button" hidden>刷新任务状态</button>
         <div id="admin-results" hidden></div>
       </section>
-      <section class="settings-section" aria-labelledby="security-title">
-        <div class="section-heading"><div><h3 id="security-title">密钥管理</h3><p>在云服务控制台管理凭据</p></div><span class="badge neutral">尚未接入</span></div>
-        <p class="hint">网页无法核实密钥是否已删除，也不能轮换密钥。请勿在此处输入密钥。</p>
-      </section>
+      
       </div>
       </div>
     </div>

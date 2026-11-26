@@ -28,13 +28,13 @@ function renderAdmin(data) {
   schedules.append(item('strong','定时任务'));
   if (!data.schedules.length) schedules.append(item('p','没有读取到调度配置。'));
   for (const s of data.schedules) schedules.append(item('p', `${scheduleNames[s.name] || '后台任务'}：${s.active ? '已启用' : '已停用'}${s.schedule === '* * * * *' ? ' · 每分钟' : ''} · 最近执行 ${formatTime(s.last_started)}${s.last_status ? ' · ' + (s.last_status === 'succeeded' ? '执行成功' : '执行未成功') : ''}`));
-  schedules.append(item('p','调度执行成功不代表每类任务都在派发或已经完成。图片派发状态未单独提供；数据库休眠期间是否执行仍未验证。'));
+  schedules.append(item('p','调度成功不代表任务已完成。')); 
   const jobs = document.createElement('div'); jobs.className = 'setting-row'; jobs.append(item('strong','任务队列'));
   for (const kind of ['classification','dedupe','image']) {
     const matches = data.jobs.filter(j => j.kind === kind);
     if (matches.length) jobs.append(item('p', `${kindNames[kind]}：${matches.map(j => `${stateNames[j.state] || j.state} ${j.count}`).join(' · ')}`));
   }
-  jobs.append(item('p', `已关联媒体：图片 ${data.media.image}。历史任务完成不代表文件仍存在。`));
+  jobs.append(item('p', `已关联图片：${data.media.image}`));
   adminResults.append(schedules,jobs); adminResults.hidden = false;
 }
 async function loadAdmin() {
