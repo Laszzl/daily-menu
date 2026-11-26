@@ -59,3 +59,47 @@ main[hidden]{display:none}
 .history-search input{background:var(--background);color:var(--text);border-color:var(--border);min-height:44px}
 .work-actions{align-items:center}
 @media(max-width:600px){.settings-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-tab{font-size:15px}.history-search{gap:.5rem}.settings-head h2{font-size:24px}}
+
+/* Settings: restrained surfaces, consistent rhythm, and compact controls. */
+.settings-page{--manage-surface:#f5f7f5;--manage-border:#dfe5df;--manage-accent:#335d49;--manage-accent-soft:#e5efe8;max-width:none;padding:56px 24px 88px;background:var(--manage-surface)}
+.settings-head,.settings-content{max-width:880px}
+.settings-head{padding:0 0 28px;border:0}
+.settings-head .eyebrow{color:var(--manage-accent);font-size:13px;letter-spacing:.09em}
+.settings-head h2{margin:8px 0 0;font-size:32px;letter-spacing:.02em}
+.close-settings{min-height:42px;padding:0 15px;border-color:var(--manage-border);border-radius:10px;background:var(--background);font-size:15px}
+.admin-section{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:20px;align-items:center;padding:22px 24px!important;border:1px solid var(--manage-border)!important;border-radius:16px;background:var(--background)}
+.admin-section .section-heading{grid-column:1/-1;align-items:center}
+.admin-section .section-heading h3{font-size:17px}
+.admin-section .section-heading p{margin-top:3px;font-size:14px}
+.admin-section .hint{grid-column:1;margin:12px 0 0;font-size:14px}
+.admin-section .admin-login{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+.admin-section .admin-login button{grid-column:1/-1;min-width:120px}
+.admin-section #admin-logout:not([hidden]){grid-column:2;grid-row:2;align-self:end;margin:8px 0 0;min-height:36px;padding:6px 13px;font-size:14px}
+.admin-section .badge{font-size:13px;padding:6px 10px;border-radius:20px}
+.admin-section .badge.neutral{background:var(--manage-surface);color:var(--muted)}
+.settings-nav{gap:4px;padding:5px;margin:24px 0 16px;border:1px solid var(--manage-border);border-radius:14px;background:var(--background)}
+.settings-tab{min-height:44px;border-radius:9px;font-size:15px}
+.settings-tab[aria-pressed="true"]{background:var(--manage-accent-soft);border-color:transparent;color:var(--manage-accent);box-shadow:none}
+.settings-tab:hover:not([aria-pressed="true"]){background:var(--manage-surface);color:var(--text)}
+.settings-panel .settings-section{padding:26px 28px!important;border:1px solid var(--manage-border)!important;border-radius:16px;background:var(--background)}
+.settings-panel .settings-section + .settings-section{margin-top:12px}
+.settings-panel[data-settings-panel="system"]+.settings-panel[data-settings-panel="system"]{margin-top:12px}
+.settings-panel .section-heading h3{font-size:19px;letter-spacing:.01em}
+.settings-panel .section-heading p{margin-top:5px;font-size:14px}
+.settings-panel .work-item{padding:18px 0;border-color:var(--manage-border)}
+.settings-panel .work-group .work-item{padding:14px}
+.settings-panel .work-item strong{font-size:16px}
+.settings-panel .work-actions{gap:8px}
+.settings-page .check-button,.settings-page .upload-disclosure summary{min-height:40px;border-color:var(--manage-border);border-radius:9px;background:var(--background);font-size:14px}
+.settings-page .check-button:hover:not(:disabled),.settings-page .upload-disclosure summary:hover{background:var(--manage-surface)}
+.settings-page .work-actions button[aria-pressed="true"]{background:var(--manage-accent);border-color:var(--manage-accent);color:white}
+.settings-page .history-search{gap:10px;margin:20px 0 8px}
+.settings-page .history-search label{gap:7px;color:var(--muted);font-size:14px;font-weight:600}
+.settings-page .history-search input,.admin-login input{min-height:44px;border-color:var(--manage-border);border-radius:9px;background:var(--background);color:var(--text)}
+.settings-page .history-search button{min-height:44px;padding-inline:18px}
+.settings-page .work-hint{font-size:14px;line-height:1.65}
+.settings-page .upload-controls{padding:14px;border:1px solid var(--manage-border);border-radius:10px;background:var(--manage-surface)}
+.settings-page .work-actions .upload-disclosure{margin:0}
+.settings-page .work-actions .upload-disclosure[open]{flex-basis:100%}
+@media(prefers-color-scheme:dark){.settings-page{--manage-surface:#191e1b;--manage-border:#344039;--manage-accent:#b5d7c0;--manage-accent-soft:#253a2d}.settings-page .work-actions button[aria-pressed="true"]{background:#b5d7c0;border-color:#b5d7c0;color:#142319}}
+@media(max-width:600px){.settings-page{padding:34px 16px 64px}.settings-head{padding-bottom:22px}.settings-head h2{font-size:27px}.admin-section{padding:18px!important}.admin-section .admin-login{grid-template-columns:1fr}.admin-section .admin-login button{grid-column:1}.settings-nav{margin-top:18px}.settings-panel .settings-section{padding:21px 18px!important}.settings-tab{font-size:14px}.settings-page .history-search{gap:8px}}

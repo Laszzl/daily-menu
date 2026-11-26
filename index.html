@@ -23,10 +23,10 @@
     <section id="pending" hidden><h2>待确认分类</h2><p class="status">这些菜正在识别，或需要确认后才能归类。</p><div class="grid" id="pending-grid"></div></section>
   </main>
   <main id="settings" class="settings-page" aria-labelledby="settings-title" hidden>
-    <div class="settings-head"><div><p class="eyebrow">菜库管理</p><h2 id="settings-title">菜库管理</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
+    <div class="settings-head"><div><p class="eyebrow">食堂菜库 / 管理</p><h2 id="settings-title">设置</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
     <div class="settings-content">
-      <section class="settings-section" aria-labelledby="admin-title">
-        <div class="section-heading"><div><h3 id="admin-title">管理员验证</h3><p>使用管理员账号解锁设置</p></div><span id="admin-badge" class="badge neutral">已锁定</span></div>
+      <section class="settings-section admin-section" aria-labelledby="admin-title">
+        <div class="section-heading"><div><h3 id="admin-title">管理员账户</h3></div><span id="admin-badge" class="badge neutral">已锁定</span></div>
         <p id="admin-message" class="hint" role="status">登录后管理菜品、配图与历史记录。</p>
         <form id="admin-login" class="admin-login">
           <label>管理员邮箱<input id="admin-email" type="email" autocomplete="username" required></label>
@@ -49,7 +49,7 @@
       </section>
       </div><div class="settings-panel" data-settings-panel="history" hidden>
       <section class="settings-section" aria-labelledby="history-title">
-        <div class="section-heading"><div><h3 id="history-title">提交历史与菜品</h3><p>查看菜单记录、分类和当前配图</p></div></div>
+        <div class="section-heading"><div><h3 id="history-title">菜品与历史</h3><p>查找菜品，或查看每次菜单提交</p></div></div>
         <div id="admin-history"></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="system" hidden>

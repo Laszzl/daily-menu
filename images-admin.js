@@ -51,7 +51,7 @@ function renderImageRequests({root,rpc,rpcUpload,isCurrent,onSaved,onApproved}) 
             try{const r=await rpc('menu_site_admin_approve_image',{p_request:q.id});if(!r.ok||await r.json()!==true)throw new Error();onApproved();refresh();}
             catch{msg.textContent='暂时无法生成；该菜可能已有任务进行中，请稍后刷新重试。';ai.disabled=false;}}); actions.append(ai);
         }
-        const upload=el('details','','upload-disclosure');upload.append(el('summary','上传图片'),imageUploadControls({dish:q.dish_id,requestId:q.id,rpcUpload,onSaved:()=>{onSaved();refresh();}}));row.append(actions,msg,upload);return row;
+        const upload=el('details','','upload-disclosure');upload.append(el('summary','上传图片'),imageUploadControls({dish:q.dish_id,requestId:q.id,rpcUpload,onSaved:()=>{onSaved();refresh();}}));actions.append(upload);row.append(actions,msg);return row;
       });
       result.replaceChildren(...(rows.length?rows:[el('p',search?'没有找到匹配的配图事项。':'目前没有等待处理的图片。','hint')]));
       prev.disabled=page===0;next.disabled=(page+1)*20>=data.total;label.textContent=`第 ${page+1} 页 · 共 ${data.total} 条`;
