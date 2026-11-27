@@ -23,11 +23,11 @@
     <section id="pending" hidden><h2>待确认分类</h2><p class="status">这些菜正在识别，或需要确认后才能归类。</p><div class="grid" id="pending-grid"></div></section>
   </main>
   <main id="settings" class="settings-page" aria-labelledby="settings-title" hidden>
-    <div class="settings-head"><div><p class="eyebrow">食堂菜库 / 管理</p><h2 id="settings-title">设置</h2></div><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
+    <div class="settings-head"><h2 id="settings-title">设置</h2><button id="close-settings" class="close-settings" type="button">返回菜库</button></div>
     <div class="settings-content">
       <section class="settings-section admin-section" aria-labelledby="admin-title">
         <div class="section-heading"><div><h3 id="admin-title">管理员账户</h3></div><span id="admin-badge" class="badge neutral">已锁定</span></div>
-        <p id="admin-message" class="hint" role="status">登录后管理菜品、配图与历史记录。</p>
+        <p id="admin-message" class="hint" role="status"></p>
         <form id="admin-login" class="admin-login">
           <label>管理员邮箱<input id="admin-email" type="email" autocomplete="username" required></label>
           <label>密码<input id="admin-password" type="password" autocomplete="current-password" required></label>
@@ -39,12 +39,12 @@
       <nav class="settings-nav" aria-label="管理功能">
         <button type="button" class="settings-tab" data-panel="images" aria-pressed="true">配图等候</button>
         <button type="button" class="settings-tab" data-panel="history" aria-pressed="false">菜品与历史</button>
-        <button type="button" class="settings-tab" data-panel="work" aria-pressed="false">待处理事项</button>
+        <button type="button" class="settings-tab" data-panel="work" aria-pressed="false">待处理</button>
         <button type="button" class="settings-tab" data-panel="system" aria-pressed="false">系统状态</button>
       </nav>
       <div class="settings-panel" data-settings-panel="images">
       <section class="settings-section" aria-labelledby="image-requests-title">
-        <div class="section-heading"><div><h3 id="image-requests-title">配图等候区</h3></div></div>
+        <div class="section-heading"><div><h3 id="image-requests-title">配图等候</h3></div></div>
         <div id="admin-image-requests"></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="history" hidden>
@@ -61,14 +61,14 @@
       </section>
       </div><div class="settings-panel" data-settings-panel="work" hidden>
       <section class="settings-section" aria-labelledby="worklist-title">
-        <div class="section-heading"><div><h3 id="worklist-title">需要处理</h3></div></div>
+        <div class="section-heading"><div><h3 id="worklist-title">待处理</h3></div></div>
         <div id="admin-worklist" aria-live="polite"><p class="hint">正在读取待处理事项…</p></div>
       </section>
       </div><div class="settings-panel" data-settings-panel="system" hidden>
       <section class="settings-section" aria-labelledby="tasks-title">
         <div class="section-heading"><div><h3 id="tasks-title">后台任务</h3></div></div>
         <div id="admin-results" hidden></div>
-        <div class="section-footer"><button id="admin-refresh" class="check-button" type="button" hidden>刷新任务状态</button></div>
+        <div class="section-footer"><button id="admin-refresh" class="check-button" type="button" hidden>刷新状态</button></div>
       </section>
       <section class="settings-section" aria-labelledby="usage-title">
         <div class="section-heading"><div><h3 id="usage-title">账户与用量</h3></div></div>

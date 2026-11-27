@@ -95,7 +95,7 @@ async function loadUsage() {
 function renderAdmin(data, imageSummary) {
   adminResults.replaceChildren();
   const images = document.createElement('div'); images.className = 'setting-row';
-  images.append(item('strong','AI 配图'),item('p','配图方式：手动选择'));
+  images.append(item('strong','AI 配图'));
   if (imageSummary === undefined) images.append(item('p','正在读取配图状态…'));
   else if (imageSummary === null) images.append(item('p','配图状态暂时无法读取。'));
   else images.append(item('p',`等待选择 ${imageSummary.waiting} · 已授权处理中 ${imageSummary.generating} · 失败 ${imageSummary.failed}`));
@@ -126,7 +126,7 @@ async function loadAdmin() {
     if (!isCurrent()) return;
     if (!Array.isArray(data.schedules) || !Array.isArray(data.jobs) || !Array.isArray(data.review) || !data.media) throw new Error('invalid');
     adminBadge.textContent = '已解锁'; adminLogin.hidden = true; adminRefresh.hidden = false; adminLogout.hidden = false; adminProtected.hidden = false;
-    adminMessage.textContent = `更新于 ${formatTime(data.checked_at)}`;
+    adminMessage.textContent = '';
     loadUsage();
     renderAdmin(data);
     adminRpc('menu_site_admin_image_summary', {}).then(async response=>{
@@ -158,7 +158,7 @@ async function loadAdmin() {
 function adminRpc(name, body) {
   return fetch(`${projectBase}/rest/v1/rpc/${name}`, {method:'POST',headers:{apikey:anonKey,authorization:`Bearer ${adminToken}`,'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(20000)});
 }
-function lockAdmin(message = '登录后管理菜品、配图与历史记录。') {
+function lockAdmin(message = '') {
   adminGeneration++; adminToken = null; adminPassword.value = ''; adminLogin.hidden = false;
   adminResults.hidden = true; adminRefresh.hidden = true; adminLogout.hidden = true; adminProtected.hidden = true;
   adminBadge.textContent = '已锁定'; adminMessage.textContent = message;

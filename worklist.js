@@ -22,9 +22,10 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
   }
   root.replaceChildren();
   const classes=group('待确认分类',data.classification_review_count,data.classification_review_count>0);
-  if (!data.classification_review.length) classes.append(el('p','目前没有待确认的分类。','work-hint'));
+  if (!data.classification_review.length) classes.append(el('p','暂无待确认分类','work-hint'));
   for (const c of data.classification_review) {
-    const row=el('div',null,'work-item');row.append(el('strong',c.name),el('p',c.is_soup?'该菜在历史菜单中记录为汤。':'请选择正确的分类。','work-hint'));
+    const row=el('div',null,'work-item');row.append(el('strong',c.name));
+    if(c.is_soup) row.append(el('p','历史菜单中记录为汤','work-hint'));
     const controls=el('div',null,'work-actions'), msg=el('p','', 'work-hint');msg.setAttribute('role','status');
     const buttons=[];
     for(const [value,label] of (c.is_soup?[['soup','汤']]:[['meat','荤菜'],['vegetable','素菜'],['soup','汤']])) {
@@ -37,7 +38,7 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
   const images=status.review.filter(j=>j.kind==='image');
   const imageCount=status.jobs.filter(j=>j.kind==='image'&&j.state==='needs_review').reduce((n,j)=>n+Number(j.count),0);
   const imageGroup=group('失败图片',imageCount,imageCount>0);
-  if(!images.length) imageGroup.append(el('p','目前没有需要检查的图片任务。','work-hint'));
+  if(!images.length) imageGroup.append(el('p','暂无失败图片','work-hint'));
   if(images.length) {
     const bulk=el('button','一键重试失败图片','check-button bulk-retry'); bulk.type='button';
     const progress=el('p','', 'work-hint'); progress.setAttribute('role','status');
@@ -86,7 +87,7 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
     });
     row.append(btn,msg);imageGroup.append(row);
   }
-  imageGroup.append(el('p','重新排队不会直接启动模型；执行时间取决于当前派发设置。最多显示最近 50 条待检查任务。','work-hint'));
+  if(imageCount>images.length) imageGroup.append(el('p','仅显示最近 50 条','work-hint'));
   const other=status.review.filter(j=>j.kind!=='image');
   if(other.length) {
     const groupOther=group('其他待检查任务',other.length,true);
@@ -94,7 +95,7 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
     groupOther.append(el('p','这类任务暂不能在网页重试。','work-hint'));
   }
   const matches=group('相似菜待确认',data.candidate_count,data.candidate_count>0);
-  if(!data.candidates.length) matches.append(el('p','目前没有相似菜候选。','work-hint'));
+  if(!data.candidates.length) matches.append(el('p','暂无相似菜','work-hint'));
   for (const c of data.candidates) {
     const row=el('div',null,'work-item');row.append(el('strong',`${c.dish} / ${c.candidate}`),el('p',c.reason,'work-hint'));
     const yes=el('button','同一道菜','check-button');yes.type='button';
@@ -104,6 +105,5 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
     no.addEventListener('click',()=>{if(!confirm(`确认“${c.dish}”和“${c.candidate}”不是同一道菜？`))return;act([yes,no],msg,'menu_site_admin_reject_candidate',{p_dish:c.dish_id,p_candidate:c.candidate_id},'已记录为不同菜。');});
     row.append(yes,no,msg);matches.append(row);
   }
-  matches.append(el('p','请选择是否为同一道菜；最多显示前 100 项。','work-hint'));
-  root.append(el('p',`今日分类请求批次 ${data.classification_calls_today} 次。`, 'work-hint'));
+  if(data.candidate_count>data.candidates.length) matches.append(el('p','仅显示前 100 项，处理后刷新查看更多。','work-hint'));
 }
