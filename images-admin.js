@@ -1,26 +1,43 @@
-function imageUploadControls({dish, requestId, rpcUpload, onSaved, onBusy=()=>{}}) {
+function imageUploadControls({dish, requestId, rpcUpload, onSaved, onBusy=()=>{}, onCancel=null}) {
   const box=document.createElement('div'); box.className='upload-controls';
-  const label=document.createElement('label'); label.textContent='选择图片（JPEG、PNG 或 WebP，最多 10 MB）';
+  const label=document.createElement('label');
   const input=document.createElement('input'); input.type='file'; input.accept='image/jpeg,image/png,image/webp';
   const preview=document.createElement('img'); preview.className='upload-preview'; preview.alt='所选图片预览'; preview.hidden=true;
   const button=document.createElement('button'); button.type='button'; button.className='check-button'; button.textContent='上传图片'; button.disabled=true;
   const msg=document.createElement('p'); msg.className='work-hint'; msg.setAttribute('role','status');
+  let cancel;
   let previewUrl=null;
   box.dispose=()=>{if(previewUrl) URL.revokeObjectURL(previewUrl);previewUrl=null;};
-  label.append(input); box.append(label,preview,button,msg);
+  if(onCancel) {
+    label.className='image-upload-picker'; input.setAttribute('aria-label','选择图片');
+    const empty=document.createElement('span'); empty.className='image-upload-empty';
+    const icon=document.createElement('span'); icon.className='image-upload-icon'; icon.setAttribute('aria-hidden','true'); icon.textContent='↑';
+    const prompt=document.createElement('strong'); prompt.textContent='点击选择图片';
+    const formats=document.createElement('span'); formats.className='image-upload-formats'; formats.textContent='JPG、PNG、WebP · 最大 10 MB';
+    empty.append(icon,prompt,formats);
+    const change=document.createElement('span'); change.className='image-upload-change'; change.textContent='更换图片';
+    label.append(input,empty,preview,change);
+    const actions=document.createElement('div'); actions.className='image-upload-actions';
+    cancel=document.createElement('button'); cancel.type='button'; cancel.className='check-button image-upload-cancel'; cancel.textContent='取消'; cancel.addEventListener('click',onCancel);
+    button.classList.add('image-upload-submit'); button.textContent='保存图片'; actions.append(cancel,button);
+    box.append(label,msg,actions);
+  } else {
+    label.textContent='选择图片（JPEG、PNG 或 WebP，最多 10 MB）'; label.append(input); box.append(label,preview,button,msg);
+  }
   input.addEventListener('change',()=>{
     if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=null; preview.hidden=true; button.disabled=true; msg.textContent='';
+    if(onCancel) label.classList.remove('has-image');
     const f=input.files?.[0]; if(!f)return;
     if(!['image/jpeg','image/png','image/webp'].includes(f.type) || !f.size || f.size>10*1024*1024){msg.textContent='请选择不超过 10 MB 的 JPEG、PNG 或 WebP 图片。';return;}
-    previewUrl=URL.createObjectURL(f); preview.onload=()=>{button.disabled=false;};
-    preview.onerror=()=>{button.disabled=true;preview.hidden=true;msg.textContent='无法打开这张图片，请选择其他文件。';};
+    previewUrl=URL.createObjectURL(f); preview.onload=()=>{button.disabled=false;if(onCancel) label.classList.add('has-image');};
+    preview.onerror=()=>{button.disabled=true;preview.hidden=true;if(onCancel)label.classList.remove('has-image');msg.textContent='无法打开这张图片，请选择其他文件。';};
     preview.src=previewUrl; preview.hidden=false;
   });
   button.addEventListener('click',async()=>{
-    const f=input.files?.[0]; if(!f)return; button.disabled=true; input.disabled=true; onBusy(true); msg.textContent='正在上传…';
+    const f=input.files?.[0]; if(!f)return; button.disabled=true; input.disabled=true; if(cancel)cancel.disabled=true; onBusy(true); msg.textContent='正在上传…';
     try { const response=await rpcUpload(dish,requestId,f); if(!response.ok) throw new Error();
       box.dispose(); msg.textContent='图片已更新。'; onBusy(false); onSaved();
-    } catch { msg.textContent='上传失败或记录已变化，请刷新后重试。'; button.disabled=false; input.disabled=false; onBusy(false); }
+    } catch { msg.textContent='上传失败或记录已变化，请刷新后重试。'; button.disabled=false; input.disabled=false; if(cancel)cancel.disabled=false; onBusy(false); }
   });
   return box;
 }
@@ -29,19 +46,19 @@ function openImageUploadDialog({dish,name,rpcUpload,onSaved}) {
   const dialog=document.createElement('dialog'); dialog.className='image-upload-dialog';
   dialog.setAttribute('aria-labelledby','image-upload-title');
   const header=document.createElement('div'); header.className='image-upload-header';
-  const title=document.createElement('h3'); title.id='image-upload-title'; title.textContent='更换图片';
+  const title=document.createElement('h3'); title.id='image-upload-title'; title.textContent='更换图片'; title.setAttribute('tabindex','-1');
   const close=document.createElement('button'); close.type='button'; close.className='image-upload-close'; close.setAttribute('aria-label','关闭'); close.textContent='×';
   header.append(title,close);
-  const dishName=document.createElement('p'); dishName.className='image-upload-name'; dishName.textContent=name;
+  const dishName=document.createElement('p'); dishName.className='image-upload-name'; dishName.textContent=`为「${name}」选择一张图片`;
   let busy=false;
-  const controls=imageUploadControls({dish,requestId:null,rpcUpload,onBusy:value=>{busy=value;close.disabled=value;},onSaved:()=>{dialog.close();onSaved();}});
+  const controls=imageUploadControls({dish,requestId:null,rpcUpload,onCancel:()=>dialog.close(),onBusy:value=>{busy=value;close.disabled=value;},onSaved:()=>{dialog.close();onSaved();}});
   dialog.append(header,dishName,controls);
   close.addEventListener('click',()=>dialog.close());
   dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
   const leave=()=>dialog.close();
   settings.addEventListener('settingsleave',leave);
   dialog.addEventListener('close',()=>{settings.removeEventListener('settingsleave',leave);controls.dispose();dialog.remove();},{once:true});
-  settings.append(dialog); dialog.showModal(); close.focus();
+  settings.append(dialog); dialog.showModal(); title.focus();
 }
 
 function renderImageRequests({root,rpc,rpcUpload,isCurrent,onSaved,onApproved}) {
