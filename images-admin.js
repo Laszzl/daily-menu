@@ -12,14 +12,14 @@ function imageUploadControls({dish, requestId, rpcUpload, onSaved, onBusy=()=>{}
     label.className='image-upload-picker'; input.setAttribute('aria-label','选择图片');
     const empty=document.createElement('span'); empty.className='image-upload-empty';
     const icon=document.createElement('span'); icon.className='image-upload-icon'; icon.setAttribute('aria-hidden','true'); icon.textContent='↑';
-    const prompt=document.createElement('strong'); prompt.textContent='点击选择图片';
-    const formats=document.createElement('span'); formats.className='image-upload-formats'; formats.textContent='JPG、PNG、WebP · 最大 10 MB';
+    const prompt=document.createElement('strong'); prompt.textContent='选择图片';
+    const formats=document.createElement('span'); formats.className='image-upload-formats'; formats.textContent='JPG / PNG / WebP · 10 MB 以内';
     empty.append(icon,prompt,formats);
     const change=document.createElement('span'); change.className='image-upload-change'; change.textContent='更换图片';
     label.append(input,empty,preview,change);
     const actions=document.createElement('div'); actions.className='image-upload-actions';
     cancel=document.createElement('button'); cancel.type='button'; cancel.className='check-button image-upload-cancel'; cancel.textContent='取消'; cancel.addEventListener('click',onCancel);
-    button.classList.add('image-upload-submit'); button.textContent='保存图片'; actions.append(cancel,button);
+    button.classList.add('image-upload-submit'); button.textContent='保存'; actions.append(cancel,button);
     box.append(label,msg,actions);
   } else {
     label.textContent='选择图片（JPEG、PNG 或 WebP，最多 10 MB）'; label.append(input); box.append(label,preview,button,msg);
@@ -49,7 +49,7 @@ function openImageUploadDialog({dish,name,rpcUpload,onSaved}) {
   const title=document.createElement('h3'); title.id='image-upload-title'; title.textContent='更换图片'; title.setAttribute('tabindex','-1');
   const close=document.createElement('button'); close.type='button'; close.className='image-upload-close'; close.setAttribute('aria-label','关闭'); close.textContent='×';
   header.append(title,close);
-  const dishName=document.createElement('p'); dishName.className='image-upload-name'; dishName.textContent=`为「${name}」选择一张图片`;
+  const dishName=document.createElement('p'); dishName.className='image-upload-name'; dishName.textContent=name;
   let busy=false;
   const controls=imageUploadControls({dish,requestId:null,rpcUpload,onCancel:()=>dialog.close(),onBusy:value=>{busy=value;close.disabled=value;},onSaved:()=>{dialog.close();onSaved();}});
   dialog.append(header,dishName,controls);
