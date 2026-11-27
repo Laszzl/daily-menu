@@ -47,8 +47,9 @@ function renderHistory({root, rpc, isCurrent, rpcUpload, onImageSaved}) {
           }
         } else {
           box.append(make('strong',row.name),make('p',`${category(row.category)} · 出现 ${row.appearances} 次 · 最近菜单 ${row.last_date || '暂无'} · ${imageStatus(row)}`,'work-hint'));
-          const upload=make('details',null,'upload-disclosure'); upload.append(make('summary','更换图片'));
-          upload.append(imageUploadControls({dish:row.id,requestId:null,rpcUpload,onSaved:()=>{onImageSaved();refresh();}})); box.append(upload);
+          const upload=make('button','更换图片','check-button'); upload.type='button';
+          upload.addEventListener('click',()=>openImageUploadDialog({dish:row.id,name:row.name,rpcUpload,onSaved:()=>{if(isCurrent()){onImageSaved();refresh();}}}));
+          box.append(upload);
         }
         return box;
       });

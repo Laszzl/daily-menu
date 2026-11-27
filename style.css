@@ -148,3 +148,14 @@ main[hidden]{display:none}
 @media(max-width:400px){.usage-bill{flex-wrap:wrap}}
 .usage-alerts:not(:empty){margin-top:18px}.usage-alert{margin:6px 0;padding:10px 12px;border-radius:9px;background:#fff1db;color:#805212;font-size:14px;font-weight:600}.usage-preferences{margin-top:12px}.usage-preferences summary{display:inline-block;color:var(--manage-accent);font-size:13px;font-weight:600;cursor:pointer}.usage-preferences-form{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-top:12px}.usage-preferences-form label{display:grid;gap:5px;flex:1 1 130px;color:var(--muted);font-size:13px}.usage-preferences-form input{min-width:0;width:100%;height:40px;padding:8px 10px;border:1px solid var(--manage-border);border-radius:9px;background:var(--background);color:var(--text);font:inherit}.usage-preferences-form .usage-scope{flex-basis:100%;margin:0}.usage-preferences summary:focus-visible,.usage-preferences input:focus-visible{outline:3px solid #8c8c90;outline-offset:2px}@media(prefers-color-scheme:dark){.usage-alert{background:#4a361c;color:#f4d395}}
 #admin-message:empty { display: none; }
+.settings-page .image-upload-dialog{width:min(440px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px;border:1px solid var(--manage-border);border-radius:16px;background:var(--background);box-shadow:0 24px 80px #0004}
+.image-upload-dialog::backdrop{background:#0009}
+.image-upload-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.image-upload-header h3{margin:0;font-size:19px}
+.image-upload-close{display:grid;place-items:center;flex:none;width:36px;height:36px;border:0;border-radius:9px;background:var(--manage-surface);color:var(--text);font:inherit;font-size:26px;line-height:1;cursor:pointer}
+.image-upload-close:disabled{opacity:.5;cursor:wait}
+.image-upload-close:focus-visible{outline:3px solid #8c8c90;outline-offset:2px}
+.image-upload-name{margin:6px 0 0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.settings-page .image-upload-dialog .upload-controls{margin-top:18px;padding:0;border:0;background:transparent;gap:12px}
+.image-upload-dialog .upload-preview{max-width:100%;max-height:min(45dvh,280px)}
+.image-upload-dialog .work-hint:empty{display:none}

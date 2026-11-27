@@ -1,4 +1,4 @@
-function imageUploadControls({dish, requestId, rpcUpload, onSaved}) {
+function imageUploadControls({dish, requestId, rpcUpload, onSaved, onBusy=()=>{}}) {
   const box=document.createElement('div'); box.className='upload-controls';
   const label=document.createElement('label'); label.textContent='选择图片（JPEG、PNG 或 WebP，最多 10 MB）';
   const input=document.createElement('input'); input.type='file'; input.accept='image/jpeg,image/png,image/webp';
@@ -6,6 +6,7 @@ function imageUploadControls({dish, requestId, rpcUpload, onSaved}) {
   const button=document.createElement('button'); button.type='button'; button.className='check-button'; button.textContent='上传图片'; button.disabled=true;
   const msg=document.createElement('p'); msg.className='work-hint'; msg.setAttribute('role','status');
   let previewUrl=null;
+  box.dispose=()=>{if(previewUrl) URL.revokeObjectURL(previewUrl);previewUrl=null;};
   label.append(input); box.append(label,preview,button,msg);
   input.addEventListener('change',()=>{
     if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=null; preview.hidden=true; button.disabled=true; msg.textContent='';
@@ -16,12 +17,31 @@ function imageUploadControls({dish, requestId, rpcUpload, onSaved}) {
     preview.src=previewUrl; preview.hidden=false;
   });
   button.addEventListener('click',async()=>{
-    const f=input.files?.[0]; if(!f)return; button.disabled=true; input.disabled=true; msg.textContent='正在上传…';
+    const f=input.files?.[0]; if(!f)return; button.disabled=true; input.disabled=true; onBusy(true); msg.textContent='正在上传…';
     try { const response=await rpcUpload(dish,requestId,f); if(!response.ok) throw new Error();
-      if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=null; msg.textContent='图片已更新。'; onSaved();
-    } catch { msg.textContent='上传失败或记录已变化，请刷新后重试。'; button.disabled=false; input.disabled=false; }
+      box.dispose(); msg.textContent='图片已更新。'; onBusy(false); onSaved();
+    } catch { msg.textContent='上传失败或记录已变化，请刷新后重试。'; button.disabled=false; input.disabled=false; onBusy(false); }
   });
   return box;
+}
+
+function openImageUploadDialog({dish,name,rpcUpload,onSaved}) {
+  const dialog=document.createElement('dialog'); dialog.className='image-upload-dialog';
+  dialog.setAttribute('aria-labelledby','image-upload-title');
+  const header=document.createElement('div'); header.className='image-upload-header';
+  const title=document.createElement('h3'); title.id='image-upload-title'; title.textContent='更换图片';
+  const close=document.createElement('button'); close.type='button'; close.className='image-upload-close'; close.setAttribute('aria-label','关闭'); close.textContent='×';
+  header.append(title,close);
+  const dishName=document.createElement('p'); dishName.className='image-upload-name'; dishName.textContent=name;
+  let busy=false;
+  const controls=imageUploadControls({dish,requestId:null,rpcUpload,onBusy:value=>{busy=value;close.disabled=value;},onSaved:()=>{dialog.close();onSaved();}});
+  dialog.append(header,dishName,controls);
+  close.addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
+  const leave=()=>dialog.close();
+  settings.addEventListener('settingsleave',leave);
+  dialog.addEventListener('close',()=>{settings.removeEventListener('settingsleave',leave);controls.dispose();dialog.remove();},{once:true});
+  settings.append(dialog); dialog.showModal(); close.focus();
 }
 
 function renderImageRequests({root,rpc,rpcUpload,isCurrent,onSaved,onApproved}) {
