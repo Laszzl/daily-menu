@@ -87,7 +87,7 @@ function renderWorklist({data, status, root, rpc, isCurrent, refresh, onSaved}) 
     });
     row.append(btn,msg);imageGroup.append(row);
   }
-  if(imageCount>images.length) imageGroup.append(el('p','仅显示最近 50 条','work-hint'));
+  if(imageCount>images.length) imageGroup.append(el('p','列表最多显示 50 条','work-hint'));
   const other=status.review.filter(j=>j.kind!=='image');
   if(other.length) {
     const groupOther=group('其他待检查任务',other.length,true);
